@@ -25,49 +25,6 @@ def get_all_attendance(admin_user: User = Depends(get_admin_user), db: Session =
         })
     return results
 
-@router.get("/{employee_id}")
-def get_employee_attendance(employee_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "Admin" and current_user.id != employee_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied to other employee's attendance logs"
-        )
-        
-    records = db.query(Attendance).filter(Attendance.employee_id == employee_id).all()
-    return [
-        {
-            "id": r.id,
-            "employeeId": r.employee_id,
-            "date": str(r.date),
-            "checkIn": r.check_in,
-            "checkOut": r.check_out,
-            "status": r.status
-        }
-        for r in records
-    ]
-
-@router.get("/today-status/{employee_id}")
-def get_today_status(employee_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "Admin" and current_user.id != employee_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
-        )
-        
-    today = date.today()
-    record = db.query(Attendance).filter(Attendance.employee_id == employee_id, Attendance.date == today).first()
-    if not record:
-        return None
-        
-    return {
-        "id": record.id,
-        "employeeId": record.employee_id,
-        "date": str(record.date),
-        "checkIn": record.check_in,
-        "checkOut": record.check_out,
-        "status": record.status
-    }
-
 @router.post("/check-in")
 def check_in(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     today = date.today()
@@ -127,3 +84,47 @@ def check_out(current_user: User = Depends(get_current_user), db: Session = Depe
         "checkOut": record.check_out,
         "status": record.status
     }
+
+@router.get("/today-status/{employee_id}")
+def get_today_status(employee_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if current_user.role != "Admin" and current_user.id != employee_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+        
+    today = date.today()
+    record = db.query(Attendance).filter(Attendance.employee_id == employee_id, Attendance.date == today).first()
+    if not record:
+        return None
+        
+    return {
+        "id": record.id,
+        "employeeId": record.employee_id,
+        "date": str(record.date),
+        "checkIn": record.check_in,
+        "checkOut": record.check_out,
+        "status": record.status
+    }
+
+@router.get("/{employee_id}")
+def get_employee_attendance(employee_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if current_user.role != "Admin" and current_user.id != employee_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied to other employee's attendance logs"
+        )
+        
+    records = db.query(Attendance).filter(Attendance.employee_id == employee_id).all()
+    return [
+        {
+            "id": r.id,
+            "employeeId": r.employee_id,
+            "date": str(r.date),
+            "checkIn": r.check_in,
+            "checkOut": r.check_out,
+            "status": r.status
+        }
+        for r in records
+    ]
+

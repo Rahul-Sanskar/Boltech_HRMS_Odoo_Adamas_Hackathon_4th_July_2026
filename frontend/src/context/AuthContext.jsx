@@ -1,7 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { authMock } from "../services/mock/authMock";
 import { profileMock } from "../services/mock/profileMock";
-import { initDb } from "../services/mock/db";
 
 const AuthContext = createContext(null);
 
@@ -11,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    initDb();
     const currentUser = authMock.getCurrentUser();
     if (currentUser) {
       setUser(currentUser);

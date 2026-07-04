@@ -104,7 +104,8 @@ app = FastAPI(
 origins = [
     "http://localhost:5173",  # React Vite development origin
     "http://127.0.0.1:5173",
-    "*"  # Allow additional origins if needed
+    "http://localhost:3000",  # Alternate dev origin
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(
