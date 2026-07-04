@@ -1,67 +1,57 @@
-import { getFromDb, saveToDb } from "./db";
+import { apiFetch } from "../api";
 
 export const leaveMock = {
   getLeavesByEmployee: async (employeeId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const leaves = getFromDb("hrms_leaves");
-        resolve(leaves.filter(l => l.employeeId === employeeId).reverse());
-      }, 300);
-    });
+    try {
+      const data = await apiFetch(`/api/leaves/${employeeId}`, {
+        method: "GET"
+      });
+      return data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   getAllLeaves: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const leaves = getFromDb("hrms_leaves");
-        resolve(leaves.reverse());
-      }, 400);
-    });
+    try {
+      const data = await apiFetch("/api/leaves", {
+        method: "GET"
+      });
+      return data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   applyLeave: async ({ employeeId, leaveType, startDate, endDate, remarks }) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const leaves = getFromDb("hrms_leaves");
-        const profiles = getFromDb("hrms_profiles");
-        const name = profiles[employeeId]?.name || "Employee";
-
-        const newLeave = {
-          id: `leave_${Date.now()}`,
-          employeeId,
-          employeeName: name,
-          leaveType,
-          startDate,
-          endDate,
-          remarks,
-          status: "Pending",
-          adminComment: ""
-        };
-
-        leaves.push(newLeave);
-        saveToDb("hrms_leaves", leaves);
-        resolve(newLeave);
-      }, 400);
-    });
+    try {
+      const data = await apiFetch("/api/leaves/apply", {
+        method: "POST",
+        body: {
+          leave_type: leaveType,
+          start_date: startDate,
+          end_date: endDate,
+          remarks: remarks
+        }
+      });
+      return data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   updateLeaveStatus: async (leaveId, status, adminComment = "") => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const leaves = getFromDb("hrms_leaves");
-        const leaveIndex = leaves.findIndex(l => l.id === leaveId);
-
-        if (leaveIndex === -1) {
-          reject(new Error("Leave request not found."));
-          return;
+    try {
+      const data = await apiFetch(`/api/leaves/${leaveId}/status`, {
+        method: "PUT",
+        body: {
+          status: status,
+          admin_comment: adminComment
         }
-
-        leaves[leaveIndex].status = status;
-        leaves[leaveIndex].adminComment = adminComment;
-        
-        saveToDb("hrms_leaves", leaves);
-        resolve(leaves[leaveIndex]);
-      }, 400);
-    });
+      });
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 };

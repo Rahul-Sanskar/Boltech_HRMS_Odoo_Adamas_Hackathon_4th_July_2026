@@ -1,45 +1,49 @@
-import { getFromDb, saveToDb } from "./db";
+import { apiFetch } from "../api";
 
 export const profileMock = {
   getProfile: async (employeeId) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const profiles = getFromDb("hrms_profiles");
-        if (profiles[employeeId]) {
-          resolve(profiles[employeeId]);
-        } else {
-          reject(new Error("Profile not found."));
-        }
-      }, 300);
-    });
+    try {
+      const data = await apiFetch(`/api/profile/${employeeId}`, {
+        method: "GET"
+      });
+      return data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   updateProfile: async (employeeId, updatedData) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const profiles = getFromDb("hrms_profiles");
-        if (!profiles[employeeId]) {
-          reject(new Error("Profile not found."));
-          return;
+    try {
+      const data = await apiFetch(`/api/profile/${employeeId}`, {
+        method: "PUT",
+        body: updatedData
+      });
+      
+      // Update local storage context if the current user profile was edited
+      const currentUserStr = localStorage.getItem("hrms_current_user");
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        if (currentUser.id === employeeId) {
+          currentUser.profile = data;
+          currentUser.name = data.name;
+          localStorage.setItem("hrms_current_user", JSON.stringify(currentUser));
         }
-
-        profiles[employeeId] = {
-          ...profiles[employeeId],
-          ...updatedData
-        };
-
-        saveToDb("hrms_profiles", profiles);
-        resolve(profiles[employeeId]);
-      }, 400);
-    });
+      }
+      
+      return data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   getAllProfiles: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const profiles = getFromDb("hrms_profiles");
-        resolve(Object.values(profiles));
-      }, 300);
-    });
+    try {
+      const data = await apiFetch("/api/profile", {
+        method: "GET"
+      });
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 };
